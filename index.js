@@ -1,4 +1,5 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 
 let nums = [
@@ -19,7 +20,15 @@ let nums = [
   },
 ];
 
+morgan.token("data", (req, res) => {
+  return JSON.stringify(req.body);
+});
+
 app.use(express.json());
+app.use(
+  // eslint-disable-next-line prettier/prettier
+  morgan(":method :url :status :res[content-length] - :response-time ms :data")
+);
 
 const generateId = () => {
   return Math.floor(Math.random() * 100000);
