@@ -19,6 +19,26 @@ let nums = [
   },
 ];
 
+app.use(express.json());
+
+const generateId = () => {
+  return Math.floor(Math.random() * 100000);
+};
+
+const findExisting = (name, num) => {
+  const nameExists = nums.find((person) => person.name === name);
+  const numExists = nums.find((person) => person.number === num);
+
+  if (nameExists && numExists) {
+    return "person already exists";
+  } else if (nameExists) {
+    return "name must be unique";
+  } else if (numExists) {
+    return "number must be unique";
+  }
+  return false;
+};
+
 app.get("/info", (req, res) => {
   const people = `Phonebook has info for ${nums.length} people`;
   const date = Date();
@@ -41,6 +61,40 @@ app.get("/api/persons/:id", (req, res) => {
   } else {
     res.status(404).end();
   }
+});
+
+app.delete("/api/persons/:id", (req, res) => {
+  const id = Number(req.params.id);
+
+  nums = nums.filter((person) => person.id !== id);
+
+  res.status(204).end();
+});
+
+app.post("/api/persons", (req, res) => {
+  const body = req.body;
+
+  if (!body.name || !body.number) {
+    return res.status(400).json({
+      error: "content missing",
+    });
+  }
+  const exists = findExisting(body.name, body.number);
+  if (exists) {
+    return res.status(400).json({
+      error: exists,
+    });
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+    id: generateId(),
+  };
+
+  nums = nums.concat(person);
+
+  res.json(person);
 });
 
 const PORT = 3001;
