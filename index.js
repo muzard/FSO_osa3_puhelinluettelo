@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const app = express();
 
 let nums = [
@@ -24,6 +25,7 @@ morgan.token("data", (req, res) => {
   return JSON.stringify(req.body);
 });
 
+app.use(cors());
 app.use(express.json());
 app.use(
   // eslint-disable-next-line prettier/prettier
