@@ -1,0 +1,7 @@
+POST https://osa3-puhelinluettelo-imtw.onrender.com/api/persons
+Content-Type: application/json
+
+{
+  "name": "Arttu Kokki",
+  "number": "044 972 1578"
+}
