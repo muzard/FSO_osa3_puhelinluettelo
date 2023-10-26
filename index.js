@@ -17,6 +17,17 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :data")
 );
 
+const errorHandler = (error, req, res, next) => {
+  console.log(error.message);
+
+  if (error.name === "CastError") {
+    return res.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
 /* const findExisting = (name, num) => {
   const nameExists = nums.find((person) => person.name === name);
   const numExists = nums.find((person) => person.number === num);
@@ -52,12 +63,12 @@ app.get("/api/persons/:id", (req, res) => {
   });
 });
 
-app.delete("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-
-  nums = nums.filter((person) => person.id !== id);
-
-  res.status(204).end();
+app.delete("/api/persons/:id", (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (req, res) => {

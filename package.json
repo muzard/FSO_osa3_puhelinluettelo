@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "server": "node ./dist/index.html",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rm -rf build && cd ../FullstackOpen/osa2/osa2_puhelinluettelo && npm run build && cp -r dist ~/repos/FSO/osa3_puhelinluettelo",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
