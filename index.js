@@ -40,15 +40,17 @@ app.use(errorHandler);
     return "number must be unique";
   }
   return false;
-}; 
+}; */
 
-app.get("/info", (req, res) => {
-  const people = `Phonebook has info for ${nums.length} people`;
-  const date = Date();
+app.get("/info", (req, res, next) => {
+  Person.find({}).then((people) => {
+    const num = `Phonebook has info for ${people.length} people`;
+    const date = Date();
 
-  const msg = `<div>${people}</div></br><div>${date}</div>`;
-  res.send(msg);
-}); */
+    const msg = `<div>${num}</div></br><div>${date}</div>`;
+    res.send(msg);
+  });
+});
 
 app.get("/api/persons", (req, res, next) => {
   Person.find({})
