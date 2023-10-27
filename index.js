@@ -1,46 +1,38 @@
-require("dotenv").config();
-const Person = require("./models/person");
 const express = require("express");
-const morgan = require("morgan");
-const cors = require("cors");
 const app = express();
+const cors = require("cors");
+require("dotenv").config();
+
+const Person = require("./models/person");
+
+const errorHandler = (error, req, res, next) => {
+  console.log(error.name);
+  console.log("-----");
+
+  if (error.name === "CastError") {
+    return res.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return res.status(400).send({
+      error: error.message,
+    });
+  }
+
+  next(error);
+};
+
+const morgan = require("morgan");
 
 morgan.token("data", (req, res) => {
   return JSON.stringify(req.body);
 });
 
-app.use(express.static("dist"));
 app.use(cors());
 app.use(express.json());
 app.use(
   // eslint-disable-next-line prettier/prettier
   morgan(":method :url :status :res[content-length] - :response-time ms :data")
 );
-
-const errorHandler = (error, req, res, next) => {
-  console.log(error.message);
-
-  if (error.name === "CastError") {
-    return res.status(400).send({ error: "malformatted id" });
-  }
-
-  next(error);
-};
-
-app.use(errorHandler);
-/* const findExisting = (name, num) => {
-  const nameExists = nums.find((person) => person.name === name);
-  const numExists = nums.find((person) => person.number === num);
-
-  if (nameExists && numExists) {
-    return "person already exists";
-  } else if (nameExists) {
-    return "name must be unique";
-  } else if (numExists) {
-    return "number must be unique";
-  }
-  return false;
-}; */
+app.use(express.static("dist"));
 
 app.get("/info", (req, res, next) => {
   Person.find({}).then((people) => {
@@ -80,12 +72,6 @@ app.delete("/api/persons/:id", (req, res, next) => {
 app.post("/api/persons", (req, res, next) => {
   const body = req.body;
 
-  if (!body.name && body.number) {
-    return res.status(400).json({
-      error: "content missing",
-    });
-  }
-
   const person = new Person({
     name: body.name,
     number: body.number,
@@ -100,19 +86,21 @@ app.post("/api/persons", (req, res, next) => {
 });
 
 app.put("/api/persons/:id", (req, res, next) => {
-  const body = req.body;
+  const { name, number } = req.body;
 
-  const person = {
-    name: body.name,
-    number: body.number,
-  };
-
-  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+  Person.findByIdAndUpdate(
+    req.params.id,
+    { name, number },
+    // eslint-disable-next-line prettier/prettier
+    { new: true, runValidators: true, context: "query" }
+  )
     .then((updatedPerson) => {
       res.json(updatedPerson);
     })
     .catch((error) => next(error));
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT);
